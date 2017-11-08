@@ -6,7 +6,10 @@
 #include <sys/un.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <pthread.h>
+#include <fcntl.h>
+
 
 #define SOCK_PATH "tpf_unix_sock.server"
 
@@ -108,6 +111,37 @@ void* clientprogram (void *commandpart)
      {
        printf("SENDING COMPLETE\n");
      }
+     
+     //real start
+
+     int fd;
+     int std = dup(STDOUT_FILENO);
+     fd = open("/home/aeis/mysh-1/temp2.txt",O_WRONLY|O_CREAT, 0644);
+     if(fd == -1)
+     {
+        printf("OPEN FILE FAILED\n");
+        exit(0);
+     }
+     else
+     {
+        printf("OPEN FILE SUCCESS\n");
+     }
+     
+     rc = dup2(fd,STDOUT_FILENO);
+     if(rc==-1)
+     {
+        printf("DUP2 FAILED\n");
+        exit(0);
+     }
+    
+     
+     evaluate_command(1, com1);
+     close(fd);
+     close(STDOUT_FILENO);     
+     dup2(std,STDOUT_FILENO);
+     printf("THIS IS DUP2 STORY\n");
+     
+     
 
      
 
