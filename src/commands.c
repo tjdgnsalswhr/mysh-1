@@ -42,7 +42,9 @@ static int is_built_in_command(const char* command_name)
 //client program
 void* clientprogram (void *commandpart)
 {
+   struct single_command matrix[512];
    struct single_command* com1 = (struct single_command*)commandpart;
+   matrix[0] = *com1;
    int client_socket;
    int rc, len;
    struct sockaddr_un server_sockaddr;
@@ -98,7 +100,7 @@ void* clientprogram (void *commandpart)
    }
    
    //sending mode..
-   strcpy(buf, "client thread ok");
+     strcpy(buf, "client thread ok");
      printf("SENDING DATA TO SERVER PROGRAM FROM CLIENT PROGRAM\n");
      rc = send(client_socket, buf, strlen(buf), 0);
      if(rc == -1)
@@ -113,10 +115,10 @@ void* clientprogram (void *commandpart)
      }
      
      //real start
-
      int fd;
-     int std = dup(STDOUT_FILENO);
-     fd = open("/home/aeis/mysh-1/temp2.txt",O_WRONLY|O_CREAT, 0644);
+     int stdo = dup(STDOUT_FILENO);
+     int stdi = dup(STDIN_FILENO);
+     fd = open("/home/aeis/mysh-1/temp2.txt",O_RDWR|O_CREAT|O_TRUNC, 0644);
      if(fd == -1)
      {
         printf("OPEN FILE FAILED\n");
@@ -133,15 +135,22 @@ void* clientprogram (void *commandpart)
         printf("DUP2 FAILED\n");
         exit(0);
      }
-    
-     
-     evaluate_command(1, com1);
+     evaluate_command(1, &matrix);
+     close(STDOUT_FILENO);
+     dup2(stdo,STDOUT_FILENO);
+
+   
      close(fd);
-     close(STDOUT_FILENO);     
-     dup2(std,STDOUT_FILENO);
+     close(STDOUT_FILENO);
+     dup2(stdo,STDOUT_FILENO);
      printf("THIS IS DUP2 STORY\n");
+     char buff[512];
+     read(fd, buff,512);
+
+
+     printf("%s\n",buff);
      
-     
+     close(fd);
 
      
 
@@ -217,7 +226,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
      memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
      memset(buf, 0, 256);
-     
+     int filed[3];
 
      server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
  
@@ -331,7 +340,26 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      {
         printf("DATA : %s\n", buf);
      }
-     
+     int fd;
+     int stdo;
+     int stdi;
+
+     bytes_rec = recv(client_socket, filed, sizeof(filed), 0);
+     if(bytes_rec == -1)
+     {
+        printf("FILED ADDRESS RECEVE ERROR\n");
+        close(server_socket);
+        close(client_socket);
+        exit(0);
+     }
+     else
+     {
+        fd = filed[0];
+        stdo = filed[1];
+        stdi = filed[2];
+        printf("FILED ADDRESS IS %d %d %d\n", fd, stdo, stdi);
+     }
+
      close(server_socket);
      close(client_socket);
       
