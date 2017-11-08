@@ -37,8 +37,9 @@ static int is_built_in_command(const char* command_name)
 }
 
 //client program
-void* clientprogram (void *temp)
+void* clientprogram (void *commandpart)
 {
+   struct single_command* com1 = (struct single_command*)commandpart;
    int client_socket;
    int rc, len;
    struct sockaddr_un server_sockaddr;
@@ -108,9 +109,11 @@ void* clientprogram (void *temp)
        printf("SENDING COMPLETE\n");
      }
 
+     
 
+     printf("test, this command : %s\n", *com1->argv);
      close(client_socket);
-     pthread_exit((void*)temp);
+     pthread_exit(NULL);
 
 }
 
@@ -228,7 +231,9 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      pthread_t clientpart;
      int clientcheck;
      long t;
-     clientcheck= pthread_create(&clientpart, NULL, clientprogram, (void*) t);
+     struct single_command *com1 = (*commands);
+     struct single_command *com2 = (*commands) +1;
+     clientcheck= pthread_create(&clientpart, NULL, clientprogram, (void*)(com1));
      if(clientcheck)
      {
        printf("THREAD CREATION FAIL\n");
