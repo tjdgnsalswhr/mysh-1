@@ -94,13 +94,13 @@ void* clientprogram (void *commandpart)
      close(client_socket);
      exit(0);
    }
-   else
+   /*else
    {
      printf("CLIENT PROGRAM CONNECT SUCCESS\n");
    }
    
    //sending mode..
-     strcpy(buf, "client thread ok");
+     strcpy(buf, "client thread ok\n");
      printf("SENDING DATA TO SERVER PROGRAM FROM CLIENT PROGRAM\n");
      rc = send(client_socket, buf, strlen(buf), 0);
      if(rc == -1)
@@ -113,46 +113,21 @@ void* clientprogram (void *commandpart)
      {
        printf("SENDING COMPLETE\n");
      }
-     
+   */
+     close(STDIN_FILENO);
      //real start
-     int fd;
      int stdo = dup(STDOUT_FILENO);
-     int stdi = dup(STDIN_FILENO);
-     fd = open("/home/aeis/mysh-1/temp2.txt",O_RDWR|O_CREAT|O_TRUNC, 0644);
-     if(fd == -1)
-     {
-        printf("OPEN FILE FAILED\n");
-        exit(0);
-     }
-     else
-     {
-        printf("OPEN FILE SUCCESS\n");
-     }
-     
-     rc = dup2(fd,STDOUT_FILENO);
+     rc = dup2(client_socket,STDOUT_FILENO);
      if(rc==-1)
      {
         printf("DUP2 FAILED\n");
         exit(0);
      }
+     
      evaluate_command(1, &matrix);
      close(STDOUT_FILENO);
      dup2(stdo,STDOUT_FILENO);
-
-   
-     close(fd);
-     close(STDOUT_FILENO);
-     dup2(stdo,STDOUT_FILENO);
-     printf("THIS IS DUP2 STORY\n");
-     char buff[512];
-     read(fd, buff,512);
-
-
-     printf("%s\n",buff);
-     
-     close(fd);
-
-     
+      
 
      printf("test, this command : %s\n", *com1->argv);
      close(client_socket);
@@ -160,12 +135,13 @@ void* clientprogram (void *commandpart)
 
 }
 
+
 /*
  * Description: Currently this function only handles single built_in commands. You should modify this structure to launch process and offer pipeline functionality.
  */
 int evaluate_command(int n_commands, struct single_command (*commands)[512])
 {
-  if (n_commands == 1)
+  if(n_commands == 1)
   {
     struct single_command* com = (*commands);
 
@@ -209,7 +185,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
       }
       else if(pid>0)
       {
-         wait(&pid);
+        wait(&pid);
       }
     }
   }
@@ -226,7 +202,6 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
      memset(&client_sockaddr, 0, sizeof(struct sockaddr_un));
      memset(buf, 0, 256);
-     int filed[3];
 
      server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
  
@@ -258,7 +233,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      }
 
      //listen part
-     int backlog = 10;
+     int backlog = 5;
      void* status;
      rc = listen(server_socket, backlog);
      if(rc == -1)
@@ -274,8 +249,11 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      pthread_t clientpart;
      int clientcheck;
      long t;
+     struct single_command matrix[512];
+      
      struct single_command *com1 = (*commands);
-     struct single_command *com2 = (*commands) +1;
+     struct single_command *com2 = &(*commands)[1];
+     matrix[0] = *com2;
      clientcheck= pthread_create(&clientpart, NULL, clientprogram, (void*)(com1));
      if(clientcheck)
      {
@@ -286,19 +264,8 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      {
        printf("THREAD CREATION SUCCESS\n");
      }
-    
-     rc = pthread_join(clientpart, &status);
      
-     if(rc)
-     {
-       printf("RETURN CODE FROM CLIENT PROGRAM THREAD JOIN ERROR\n");
-       exit(0);
-     }
-     else
-     {
-       printf("RETURN CODE FROM CLIENT PROGRAM THREAD JOIN COMPLETE\n");
-     }
-     
+    sleep(1);
 
      //accept
      
@@ -325,10 +292,10 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
         printf("GETPEERNAME SUCCESS\n");
         printf("CLIENT SOCKET FILEPATH : %s\n", client_sockaddr.sun_path);
      }
-     
+ 
      printf("waiting to read...\n");
      int bytes_rec = 0;
-     bytes_rec = recv(client_socket, buf, sizeof(buf), 0);
+     /*bytes_rec = recv(client_socket, buf, sizeof(buf), 0);
      if(bytes_rec == -1)
      {
         printf("RECEVE ERROR\n");
@@ -340,31 +307,24 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      {
         printf("DATA : %s\n", buf);
      }
+     */
+     //IPC final
      int fd;
-     int stdo;
-     int stdi;
-
-     bytes_rec = recv(client_socket, filed, sizeof(filed), 0);
-     if(bytes_rec == -1)
-     {
-        printf("FILED ADDRESS RECEVE ERROR\n");
-        close(server_socket);
-        close(client_socket);
-        exit(0);
-     }
-     else
-     {
-        fd = filed[0];
-        stdo = filed[1];
-        stdi = filed[2];
-        printf("FILED ADDRESS IS %d %d %d\n", fd, stdo, stdi);
-     }
-
+     
+     int state;
+     close(STDOUT_FILENO);
+     fd = dup(STDIN_FILENO);
+     dup2(client_socket,STDIN_FILENO);
+     pthread_join(clientpart, &state);
+ 
+     evaluate_command(1,&matrix);
+     close(STDIN_FILENO);
+     dup2(fd,STDIN_FILENO);
      close(server_socket);
      close(client_socket);
-      
 
 
+     return 1;
   }
 
   return 0;
