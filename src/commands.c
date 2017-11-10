@@ -127,9 +127,7 @@ void* clientprogram (void *commandpart)
      evaluate_command(1, &matrix);
      close(STDOUT_FILENO);
      dup2(stdo,STDOUT_FILENO);
-      
-
-     printf("test, this command : %s\n", *com1->argv);
+     
      close(client_socket);
      pthread_exit(NULL);
 
@@ -178,10 +176,30 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
       if(pid==0)
       {
          if(execv(com->argv[0], com->argv)==-1)
-         {
-           fprintf(stderr, "%s: command not found\n", com->argv[0]);
-           exit(0);
+         { 
+           char tempbin[80];
+           memset(tempbin,0,80);
+           strcat(tempbin,"/bin/");
+           strcat(tempbin,com->argv[0]);
+           strcpy(com->argv[0],tempbin);
+        
+           if(execv(com->argv[0], com->argv)==-1)
+           {
+             
+             char tempbin2[80];
+             memset(tempbin2,0,80);
+             strcat(tempbin2,"/usr");
+             strcat(tempbin2,com->argv[0]);
+             strcpy(com->argv[0],tempbin2);
+             if(execv(com->argv[0],com->argv)==-1)
+             { 
+             fprintf(stderr, "%s: command not found\n", com->argv[0]);
+             exit(0);
+             }
+             
+           }
          }
+        
       }
       else if(pid>0)
       {
@@ -264,8 +282,8 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      {
        printf("THREAD CREATION SUCCESS\n");
      }
-     
-    sleep(1);
+
+     sleep(2); 
 
      //accept
      
@@ -324,7 +342,6 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      close(client_socket);
 
 
-     return 1;
   }
 
   return 0;
