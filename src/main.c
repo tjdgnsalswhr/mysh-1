@@ -33,6 +33,7 @@ int main()
 
     free_commands(n_commands, &commands);
     n_commands = 0;
+    memset(buf,0,8096);
 
     if (ret == 1) {
       break;

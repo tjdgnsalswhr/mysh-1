@@ -129,6 +129,7 @@ void* clientprogram (void *commandpart)
      }
      
      evaluate_command(1, &matrix);
+     fflush(stdout);
      close(STDOUT_FILENO);
      dup2(stdo,STDOUT_FILENO);
      
@@ -349,6 +350,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      //pthread_join(clientpart, &state);
  
      evaluate_command(1,&matrix);
+     fflush(stdin);
      close(STDIN_FILENO);
      dup2(fd,STDIN_FILENO);
      close(server_socket);
