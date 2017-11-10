@@ -1,13 +1,19 @@
 #include "signal_handlers.h"
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+
 
 void catch_sigint(int signalNo)
 {
-  exit(0);
+  signal(SIGINT,SIG_IGN);
+  printf("CTRL+C IS INVALID INPUT!!\n");
   // TODO: File this!
 }
 
 void catch_sigtstp(int signalNo)
 {
-  exit(0);
+  signal(SIGTSTP,SIG_IGN);
+  printf("CTRL+Z IS INVALID INPUT!!\n");
   // TODO: File this!
 }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
 #include "commands.h"
 #include "built_in.h"
 #include "utils.h"
@@ -20,12 +21,10 @@
 int main()
 {
   char buf[8096];
-  signal(SIGINT, catch_sigint);
-  signal(SIGTSTP, catch_sigtstp);
   while (1) {
     fgets(buf, 8096, stdin);
-   // siganl(SIGINT, (void*)catch_sigint);
-   // signal(SIGTSTP, (void*)catch_sigtstp);
+    signal(SIGINT, catch_sigint);
+    signal(SIGTSTP, catch_sigtstp);
     struct single_command commands[512];
     int n_commands = 0;
     mysh_parse_command(buf, &n_commands, &commands);
