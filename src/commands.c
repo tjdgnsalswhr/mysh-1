@@ -60,10 +60,12 @@ void* clientprogram (void *commandpart)
      printf("CLIENT PROGRAM CLIENT SOCKET MAKING FAIL\n");
      exit(0);
    }
+   /*
    else
    {
      printf("CLIENT PROGRAM CLIENT SOCKET MAKING SUCCESS\n");
    }
+   */
     
    client_sockaddr.sun_family = AF_UNIX;
    strcpy(client_sockaddr.sun_path, CLIENT_PATH);
@@ -78,10 +80,12 @@ void* clientprogram (void *commandpart)
      close(client_socket);
      exit(0);
    }
+   /*
    else
    {
      printf("CLIENT PROGRAM BIND SUCCESS\n");
    }
+   */
 
 
    //client program's server socket part
@@ -228,10 +232,12 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
        printf("SERVER PROGRAM SERVER SOCKET MAKINT FAIL\n");
        exit(0);
      }
+     /*
      else
      {
        printf("SERVER PROGRAM SERVER SOCKET MAKING SUCCESS\n");
      }
+     */
      
      server_sockaddr.sun_family = AF_UNIX;
      strcpy(server_sockaddr.sun_path, SOCK_PATH);
@@ -245,10 +251,12 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
        close(server_socket);
        exit(0);
      }
+     /*
      else
      {
        printf("SERVER PROGRAM BIND SUCCESS\n");
      }
+     */
 
      //listen part
      int backlog = 5;
@@ -260,7 +268,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
         close(server_socket);
         exit(0);
      }
-     printf("LISTENING..\n");
+    // printf("LISTENING..\n");
  
 
      //CLIENT THREAD MAKING
@@ -278,12 +286,15 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
        printf("THREAD CREATION FAIL\n");
        exit(0);
      }
+     /*
      else
      {
        printf("THREAD CREATION SUCCESS\n");
      }
+     */
+     pthread_join(clientpart,NULL);
 
-     sleep(2); 
+     //sleep(1);
 
      //accept
      
@@ -305,13 +316,15 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
         close(client_socket);
         exit(0);
      }
+     /*
      else
      {
         printf("GETPEERNAME SUCCESS\n");
         printf("CLIENT SOCKET FILEPATH : %s\n", client_sockaddr.sun_path);
      }
- 
+     
      printf("waiting to read...\n");
+     */
      int bytes_rec = 0;
      /*bytes_rec = recv(client_socket, buf, sizeof(buf), 0);
      if(bytes_rec == -1)
@@ -333,7 +346,7 @@ int evaluate_command(int n_commands, struct single_command (*commands)[512])
      close(STDOUT_FILENO);
      fd = dup(STDIN_FILENO);
      dup2(client_socket,STDIN_FILENO);
-     pthread_join(clientpart, &state);
+     //pthread_join(clientpart, &state);
  
      evaluate_command(1,&matrix);
      close(STDIN_FILENO);

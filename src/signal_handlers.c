@@ -2,12 +2,12 @@
 
 void catch_sigint(int signalNo)
 {
-  return;
+  exit(0);
   // TODO: File this!
 }
 
 void catch_sigtstp(int signalNo)
 {
-  return;
+  exit(0);
   // TODO: File this!
 }
