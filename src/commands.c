@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <pthread.h>
 #include <fcntl.h>
-
+#include <wait.h>
 
 #define SOCK_PATH "tpf_unix_sock.server"
 
